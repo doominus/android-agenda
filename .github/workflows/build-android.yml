@@ -1,0 +1,57 @@
+name: Build Android APK
+
+# Si avvia da solo quando aggiorni i file dell'app in questa cartella, oppure
+# puoi avviarlo a mano in qualsiasi momento dalla scheda "Actions" di GitHub
+# (pulsante "Run workflow").
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'www/**'
+      - 'capacitor.config.json'
+      - 'package.json'
+      - '.github/workflows/build-android.yml'
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scarica il codice
+        uses: actions/checkout@v4
+
+      - name: Prepara Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Prepara Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Prepara Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Installa i pacchetti Android necessari
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Installa le dipendenze npm
+        run: npm install
+
+      - name: Crea il progetto Android (Capacitor)
+        run: npx cap add android
+
+      - name: Copia l'app dentro il progetto Android
+        run: npx cap sync android
+
+      - name: Compila l'APK (debug, pronta da installare)
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Carica l'APK come risultato del build
+        uses: actions/upload-artifact@v4
+        with:
+          name: agenda-prenotazioni-android
+          path: android/app/build/outputs/apk/debug/app-debug.apk

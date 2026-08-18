@@ -1,0 +1,11 @@
+{
+  "appId": "it.anticamaddalena.agenda",
+  "appName": "Agenda Prenotazioni",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
